@@ -55,7 +55,11 @@ def describe(
         ],
     )
 
-    descriptions = json.loads(completion.choices[0].message.content)
+    try:
+        descriptions = json.loads(completion.choices[0].message.content)
+    except json.JSONDecodeError:
+        print("Response was not in JSON format...")
+        raise typer.Abort()
 
     for i, description in enumerate(descriptions, start=1):
         print(f"[bold underline sky_blue1]Description {i}[/]\n{description}\n")
@@ -86,7 +90,11 @@ def introduce(
         ],
     )
 
-    exceprts = json.loads(completion.choices[0].message.content)
+    try:
+        exceprts = json.loads(completion.choices[0].message.content)
+    except json.JSONDecodeError:
+        print("Response was not in JSON format...")
+        raise typer.Abort()
 
     for i, excerpt in enumerate(exceprts, start=1):
         print(f"[bold underline dark_orange]Excerpt {i}[/]\n{excerpt}\n")
