@@ -22,12 +22,13 @@ You are a skilled, concise summariser specialising in technical blog posts. Arti
 
 Your task is to create **three distinct one-line summaries** that will pique the reader's curiosity and entice them to read the full article. Use UK spelling and grammar.
 
-Provide your response as a JSON array like this:
+**Respond ONLY with a JSON array of strings, formatted as follows:**
 [
     "First summary",
     "Second summary",
     "Third summary"
 ]
+**Do not include any additional commentary or formatting outside of the JSON array.**
 """
 
 EXCERPT_GENERATOR_CONTENT = """
@@ -39,10 +40,11 @@ Refer to the reader in the second person (you).
 Do not refer to the title of the article.
 Use UK spelling and grammar.
 
-Provide your response as a JSON array like this:
+**Respond ONLY with a JSON array of strings, formatted as follows:**
 [
     "First excerpt",
     "Second excerpt",
     "Third excerpt"
 ]
+**Do not include any additional commentary or formatting outside of the JSON array.**
 """
