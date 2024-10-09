@@ -1,0 +1,23 @@
+[project]
+name = "sak"
+version = "0.1.0"
+description = "CLI to help with various tasks"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.51.2",
+    "typer>=0.12.5",
+]
+
+[project.scripts]
+sak = "sak.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+dev-dependencies = [
+    "ruff>=0.6.9",
+]
