@@ -27,6 +27,7 @@ class BlogPost(BaseModel):
     meta: FrontMatter
 
 class BlogPostParser:
+    # map for converting admonitions into a "quote with relevant emoji"
     note_types = {
         "note": ":memo:",
         "abstract": ":notebook:",
@@ -60,10 +61,12 @@ class BlogPostParser:
         self.linkedin_blog = copy.deepcopy(self.medium_blog)
 
     def _replace_headers(self, content: str) -> str:
+        # Turn level 2 headers into level 1 and level 3 headers into level 2
         content = content.replace("##", "#")
         return content.replace("###", "##")
 
     def _format_tag(self, tag: str):
+        # remove spaces and hyphens
         return tag.replace("-", " ").title().replace(" ", "")
 
     def _find_all_images(self, content: str) -> list[str]:
@@ -71,9 +74,11 @@ class BlogPostParser:
         return matches
 
     def _remove_curly_brace_content(self, content: str):
+        # This is the extra css that can be passed into material for mkdocs
         return re.sub(self.curly_brace_pattern, r'\1', content, flags=re.MULTILINE)
 
     def _replace_image_with_todo(self, content: str, image_str: str) -> str:
+        # For sites that can't automate images. This creates a note that must be swapped out for the intended image
         lines = content.split("\n")
         for i, line in enumerate(lines):
             if image_str in line:
@@ -83,6 +88,7 @@ class BlogPostParser:
         return "\n".join(lines)
 
     def _get_main_image(self, content: str) -> str:
+        # Grabs the post's main image because some sites allow this to be uploaded via metadata
         match = re.search(self.main_image_pattern, content, re.MULTILINE)
         if not match:
             raise Exception("Cannot find Main Image")
@@ -94,11 +100,13 @@ class BlogPostParser:
         return url_match.group(1)
 
     def _add_title(self, blog: BlogPost) -> BlogPost:
+        # used if the hosting site doesn't want title as metadata. This puts it back in the post.
         title = f"# {blog.meta.title}\n"
         blog.content = title + blog.content
         return blog
 
     def _note_type_to_emoji(self, note_type: str) -> str:
+        # used when converting admonitions. This swaps out the note type for a relevant emoji.
         if note_type not in self.note_types:
             raise Exception(f"Note type '{note_type}' does not have a declared Mapping")
         return self.note_types[note_type]
@@ -131,19 +139,23 @@ class BlogPostParser:
         if lines[0] != "---":
             raise Exception("No frontmatter detected!")
         
+        # capture the frontmatter
         end_index = 1
         delimiter = lines[0]
         while end_index < len(lines) and lines[end_index] != delimiter:
             front_matter_tmp += lines[end_index] + "\n"
             end_index += 1
 
-        # skip the closing delimiter and remove the excerpt marker
+        # skip the closing delimiter
         blog_content = "\n".join(lines[end_index + 1:]).strip()
+        # remove the excerpt marker
         blog_content = blog_content.replace("<!-- more -->\n", "")
+        # Apply generic transformations
         blog_content = self._transform_admonitions(blog_content)
         blog_content = self._replace_headers(blog_content)
         blog_content = emoji.emojize(blog_content, language="alias")
 
+        # turn frontmatter into a dict and add extra metadata
         front_matter = yaml.safe_load(front_matter_tmp)
         front_matter["tags"] = [self._format_tag(tag) for tag in front_matter["tags"]]
         front_matter["date"] = front_matter["date"]["created"]
@@ -171,8 +183,7 @@ class BlogPostParser:
 
         self.medium_blog = self._add_title(self.medium_blog)
 
-        images = self._find_all_images(self.medium_blog.content)
-        for image in images:
+        for image in self._find_all_images(self.medium_blog.content):
             self.medium_blog.content = self._replace_image_with_todo(self.medium_blog.content, image)
 
         self.medium_blog.content += f"\n\n---\n*Originally published on my [blog]({canonical_url})*"
