@@ -100,6 +100,13 @@ class BlogPostParser:
             raise SakError("Cannot find the URL inside the Main Image line")
         
         return url_match.group(1)
+    
+    def _remove_main_image(self, content: str) -> str:
+        match = re.search(self.main_image_pattern, content, re.MULTILINE)
+        if not match:
+            raise SakError("Cannot find Main Image")
+        
+        return content.replace(match.group(1), "")
 
     def _add_title(self, blog: BlogPost) -> BlogPost:
         # used if the hosting site doesn't want title as metadata. This puts it in the post content.
@@ -232,6 +239,7 @@ class BlogPostParser:
             "Content-Type": "application/json",
         }
 
+        self.dev_blog.content = self._remove_main_image(self.dev_blog.content)
         self.dev_blog.content = self._remove_curly_brace_content(self.dev_blog.content)
 
         payload = {
@@ -241,6 +249,7 @@ class BlogPostParser:
                 "body_markdown": self.dev_blog.content,
                 "tags": self.dev_blog.meta.tags,
                 "description": self.dev_blog.meta.description,
+                "main_image": self.dev_blog.meta.main_image,
                 "canonical_url": canonical_url
             }
         }
