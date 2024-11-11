@@ -60,6 +60,7 @@ class BlogPostParser:
         self.medium_blog = self._parse_blog(blog_post)
         self.dev_blog = copy.deepcopy(self.medium_blog)
         self.linkedin_blog = copy.deepcopy(self.medium_blog)
+        print(self.medium_blog.meta)
 
     def _replace_headers(self, content: str) -> str:
         # Turn level 2 headers into level 1 and level 3 headers into level 2
@@ -101,7 +102,7 @@ class BlogPostParser:
         return url_match.group(1)
 
     def _add_title(self, blog: BlogPost) -> BlogPost:
-        # used if the hosting site doesn't want title as metadata. This puts it back in the post.
+        # used if the hosting site doesn't want title as metadata. This puts it in the post content.
         title = f"# {blog.meta.title}\n"
         blog.content = title + blog.content
         return blog
@@ -239,6 +240,7 @@ class BlogPostParser:
                 "published": "false",
                 "body_markdown": self.dev_blog.content,
                 "tags": self.dev_blog.meta.tags,
+                "description": self.dev_blog.meta.description,
                 "canonical_url": canonical_url
             }
         }
