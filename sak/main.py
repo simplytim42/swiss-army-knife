@@ -8,7 +8,7 @@ from rich import print
 from typing_extensions import Annotated
 from .blog_parser import BlogPostParser
 
-from .helper import POST_REVIEWER_CONTENT, DESCRIPTION_GENERATOR_CONTENT, EXCERPT_GENERATOR_CONTENT
+from .helper import POST_REVIEWER_CONTENT, DESCRIPTION_GENERATOR_CONTENT, EXCERPT_GENERATOR_CONTENT, TITLE_GENERATOR_CONTENT
 
 overview = """
 Swiss Army Knife (sak).
@@ -55,7 +55,7 @@ def describe(
     client = OpenAI()
 
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": DESCRIPTION_GENERATOR_CONTENT},
             {"role": "user", "content": f"Summarise this article: ```{user_content}```"},
@@ -74,6 +74,40 @@ def describe(
     selection = int(typer.prompt("Which description would you like to copy?"))
 
     pyperclip.copy(descriptions[selection - 1])
+
+
+@app.command()
+def title(
+        filepath: Annotated[
+        Path, typer.Argument(help="The filepath of the blog post being titled.")
+    ],
+):
+    """
+    Send the blog post specified in FILEPATH to ChatGPT to generate a title. The result is copied to your clipboard.
+    """
+    user_content = filepath.open().read()
+    client = OpenAI()
+
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": TITLE_GENERATOR_CONTENT},
+            {"role": "user", "content": f"Create a title this article: ```{user_content}```"},
+        ],
+    )
+
+    try:
+        titles = json.loads(completion.choices[0].message.content)
+    except json.JSONDecodeError:
+        print("Response was not in JSON format...")
+        raise typer.Abort()
+
+    for i, title in enumerate(titles, start=1):
+        print(f"[bold underline sky_blue1]Title {i}[/]\n{title}\n")
+
+    selection = int(typer.prompt("Which title would you like to copy?"))
+
+    pyperclip.copy(titles[selection - 1])
 
 
 
