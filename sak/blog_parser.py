@@ -10,6 +10,7 @@ import copy
 from typing import Optional
 from rich import print
 from pathlib import Path
+from .helper import SakError
 
 class FrontMatter(BaseModel):
     draft: bool
@@ -91,11 +92,11 @@ class BlogPostParser:
         # Grabs the post's main image because some sites allow this to be uploaded via metadata
         match = re.search(self.main_image_pattern, content, re.MULTILINE)
         if not match:
-            raise Exception("Cannot find Main Image")
+            raise SakError("Cannot find Main Image")
         
         url_match = re.search(self.url_pattern, match.group(1))
         if not url_match:
-            raise Exception("Cannot find the URL inside the Main Image line")
+            raise SakError("Cannot find the URL inside the Main Image line")
         
         return url_match.group(1)
 
@@ -108,7 +109,7 @@ class BlogPostParser:
     def _note_type_to_emoji(self, note_type: str) -> str:
         # used when converting admonitions. This swaps out the note type for a relevant emoji.
         if note_type not in self.note_types:
-            raise Exception(f"Note type '{note_type}' does not have a declared Mapping")
+            raise SakError(f"Note type '{note_type}' does not have a declared Mapping")
         return self.note_types[note_type]
 
     def _transform_admonitions(self, content):
@@ -137,7 +138,7 @@ class BlogPostParser:
         lines = content.splitlines()
 
         if lines[0] != "---":
-            raise Exception("No frontmatter detected!")
+            raise SakError("No frontmatter detected!")
         
         # capture the frontmatter
         end_index = 1
@@ -170,7 +171,7 @@ class BlogPostParser:
         token = os.getenv("MEDIUM_API_KEY")
 
         if token is None:
-            raise Exception("MEDIUM_API_KEY is not found.")
+            raise SakError("MEDIUM_API_KEY is not found.")
 
         headers = {
             "Authorization": f"Bearer {token}",
@@ -223,7 +224,7 @@ class BlogPostParser:
         token = os.getenv("DEV_API_KEY")
 
         if token is None:
-            raise Exception("DEV_API_KEY is not found.")
+            raise SakError("DEV_API_KEY is not found.")
 
         headers = {
             "api-key": token,

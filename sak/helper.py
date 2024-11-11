@@ -1,3 +1,6 @@
+class SakError(Exception):
+    pass
+
 POST_REVIEWER_CONTENT = """
 You are a skilled, concise proofreader specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
 
