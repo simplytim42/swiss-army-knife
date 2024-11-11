@@ -11,6 +11,8 @@ from typing import Optional
 from rich import print
 from pathlib import Path
 from .helper import SakError
+from PIL import Image
+import cairosvg
 
 class FrontMatter(BaseModel):
     draft: bool
@@ -47,7 +49,7 @@ class BlogPostParser:
     admonition_pattern = re.compile(r'[!?]{3} (\w+)(?:\s+"([^"]+)")?\n\n((?:\s{4}.*\n?)+)')
     main_image_pattern = rf"^(.*{re.escape("main-image")}.*)$"
     url_pattern = r"\((https?://[^\s\)]+)\)"
-    md_image_pattern = r"!\[.*?\]\((https?://[^\s\)]+)\)"
+    md_image_pattern = r"!\[(.*?)\]\((https?://[^\s\)]+)\)"
     curly_brace_pattern = r'(!\[.*?\]\(https?://[^\)]+\))\s*\{.*?\}'
 
     medium_api = "https://api.medium.com/v1"
@@ -79,12 +81,56 @@ class BlogPostParser:
         # This is the extra css that can be passed into material for mkdocs
         return re.sub(self.curly_brace_pattern, r'\1', content, flags=re.MULTILINE)
 
-    def _replace_image_with_todo(self, content: str, image_str: str) -> str:
-        # For sites that can't automate images. This creates a note that must be swapped out for the intended image
+    def _upload_image_to_medium(self, content: str, image_str: str, alt_text: str) -> str:
+        # download and convert image
+        r = httpx.get(image_str)
+        r.raise_for_status()
+        og_name = image_str.split("/")[-1]
+        image_filename = Path(og_name)
+
+        content_type = r.headers["Content-Type"]
+        extension = content_type.split("/")[-1]
+        extension = "svg" if extension == "svg+xml" else extension
+
+        with image_filename.open("wb") as f:
+            f.write(r.content)
+        
+        if extension == "svg":
+            png = Path(f"{og_name}.png")
+            cairosvg.svg2png(url=image_filename.name, write_to=png.name)
+            image_filename.unlink()
+            image_filename = png
+
+        image = Image.open(image_filename.name)
+        image_filename.unlink()
+        image_filename = Path(f"{og_name}.jpeg")
+        rgb_image = image.convert("RGB")
+        rgb_image.save(image_filename.name, "JPEG")
+
+        # upload to medium
+        token = os.getenv("MEDIUM_API_KEY")
+        if token is None:
+            raise SakError("MEDIUM_API_KEY is not found.")
+        
+        with image_filename.open("rb") as image_file:
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+                "Accept-Charset": "utf-8",
+            }
+            files = {
+                "image": (image_filename.name, image_file, "image/jpeg")
+            }
+            r = httpx.post(f"{self.medium_api}/images", headers=headers, files=files)
+            r.raise_for_status()
+
+        image_filename.unlink()
+        image_url = r.json()["data"]["url"]
+
         lines = content.split("\n")
         for i, line in enumerate(lines):
             if image_str in line:
-                lines[i] = f"> TODO:: {image_str}"
+                lines[i] = f'<img src="{image_url}" alt="{alt_text}">'
             if "<figure" in line or "</figure>" in line:
                 lines[i] = ""
         return "\n".join(lines)
@@ -193,7 +239,8 @@ class BlogPostParser:
         self.medium_blog = self._add_title(self.medium_blog)
 
         for image in self._find_all_images(self.medium_blog.content):
-            self.medium_blog.content = self._replace_image_with_todo(self.medium_blog.content, image)
+            alt_text, url = image
+            self.medium_blog.content = self._upload_image_to_medium(self.medium_blog.content, url, alt_text)
 
         self.medium_blog.content += f"\n\n---\n*Originally published on my [blog]({canonical_url})*"
 
