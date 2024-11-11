@@ -22,6 +22,7 @@ $ sak [OPTIONS] COMMAND [ARGS]...
 * `introduce`: Send the blog post specified in FILEPATH...
 * `publish`: Publish draft blog posts on Dev.to and...
 * `review`: Send the blog post specified in FILEPATH...
+* `title`: Send the blog post specified in FILEPATH...
 
 ## `sak describe`
 
@@ -94,6 +95,24 @@ $ sak review [OPTIONS] FILEPATH
 **Arguments**:
 
 * `FILEPATH`: The filepath of the blog post being reviewed.  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `sak title`
+
+Send the blog post specified in FILEPATH to ChatGPT to generate a title. The result is copied to your clipboard.
+
+**Usage**:
+
+```console
+$ sak title [OPTIONS] FILEPATH
+```
+
+**Arguments**:
+
+* `FILEPATH`: The filepath of the blog post being titled.  [required]
 
 **Options**:
 
