@@ -1,0 +1,2 @@
+class SakError(Exception):
+    pass

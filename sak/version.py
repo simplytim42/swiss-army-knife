@@ -1,19 +1,18 @@
 import typer
-
+from rich import print
 from importlib.metadata import version
+from .utils.config import __APP_NAME__
 
 
 app = typer.Typer()
 
-__app_name__ = "sak"
-
 try:
-    __version__ = version(__app_name__)
+    __VERSION__ = version(__APP_NAME__)
 except Exception:
-    __version__ = "unknown"
+    __VERSION__ = "unknown"
 
 
 @app.command()
 def version():
-    typer.echo(f"{__app_name__} version {__version__}")
+    print(f"{__APP_NAME__} version [bold yellow]{__VERSION__}[/bold yellow]")
     typer.Exit()
