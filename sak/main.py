@@ -7,6 +7,7 @@ from openai import OpenAI
 from rich import print
 from typing_extensions import Annotated
 from .blog_parser import BlogPostParser
+from .version import app as version_app
 
 from .helper import POST_REVIEWER_CONTENT, DESCRIPTION_GENERATOR_CONTENT, EXCERPT_GENERATOR_CONTENT, TITLE_GENERATOR_CONTENT
 
@@ -17,6 +18,8 @@ The following env vars need to exist: OPENAI_API_KEY, MEDIUM_API_KEY
 """
 
 app = typer.Typer(no_args_is_help=True, help=overview)
+
+app.add_typer(version_app)
 
 
 @app.command()
