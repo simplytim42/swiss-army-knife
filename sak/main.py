@@ -11,4 +11,4 @@ The following environment variables need to exist:\n\n- OPENAI_API_KEY\n\n- MEDI
 app = typer.Typer(no_args_is_help=True, help=OVERVIEW)
 
 app.add_typer(version_app)
-app.add_typer(blog_app)
+app.add_typer(blog_app, name="blog")

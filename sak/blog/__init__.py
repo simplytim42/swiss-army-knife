@@ -5,7 +5,7 @@ from .title import app as title_app
 from .introduce import app as introduce_app
 from .publish import app as publish_app
 
-app = typer.Typer(no_args_is_help=True, help="Commands for 'blog'")
+app = typer.Typer(no_args_is_help=True, help="Manage blog posts.")
 
 app.add_typer(review_app)
 app.add_typer(describe_app)
