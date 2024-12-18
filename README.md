@@ -25,11 +25,7 @@ $ sak [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `version`
-* `review`: Send a blog post to ChatGPT for review.
-* `describe`: Send a blog post to ChatGPT to generate a...
-* `title`: Send a blog post to ChatGPT to generate a...
-* `introduce`: Send a blog post to ChatGPT to generate an...
-* `publish`: Publish a draft blog posts on Dev.to and...
+* `blog`: Manage blog posts.
 
 ## `sak version`
 
@@ -43,14 +39,36 @@ $ sak version [OPTIONS]
 
 * `--help`: Show this message and exit.
 
-## `sak review`
+## `sak blog`
+
+Manage blog posts.
+
+**Usage**:
+
+```console
+$ sak blog [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `review`: Send a blog post to ChatGPT for review.
+* `describe`: Send a blog post to ChatGPT to generate a...
+* `title`: Send a blog post to ChatGPT to generate a...
+* `introduce`: Send a blog post to ChatGPT to generate an...
+* `publish`: Publish a draft blog posts on Dev.to and...
+
+### `sak blog review`
 
 Send a blog post to ChatGPT for review.
 
 **Usage**:
 
 ```console
-$ sak review [OPTIONS] FILEPATH
+$ sak blog review [OPTIONS] FILEPATH
 ```
 
 **Arguments**:
@@ -61,14 +79,14 @@ $ sak review [OPTIONS] FILEPATH
 
 * `--help`: Show this message and exit.
 
-## `sak describe`
+### `sak blog describe`
 
 Send a blog post to ChatGPT to generate a one-line description. The result is copied to your clipboard.
 
 **Usage**:
 
 ```console
-$ sak describe [OPTIONS] FILEPATH
+$ sak blog describe [OPTIONS] FILEPATH
 ```
 
 **Arguments**:
@@ -79,14 +97,14 @@ $ sak describe [OPTIONS] FILEPATH
 
 * `--help`: Show this message and exit.
 
-## `sak title`
+### `sak blog title`
 
 Send a blog post to ChatGPT to generate a title. The result is copied to your clipboard.
 
 **Usage**:
 
 ```console
-$ sak title [OPTIONS] FILEPATH
+$ sak blog title [OPTIONS] FILEPATH
 ```
 
 **Arguments**:
@@ -97,14 +115,14 @@ $ sak title [OPTIONS] FILEPATH
 
 * `--help`: Show this message and exit.
 
-## `sak introduce`
+### `sak blog introduce`
 
 Send a blog post to ChatGPT to generate an introduction.
 
 **Usage**:
 
 ```console
-$ sak introduce [OPTIONS] FILEPATH
+$ sak blog introduce [OPTIONS] FILEPATH
 ```
 
 **Arguments**:
@@ -115,14 +133,14 @@ $ sak introduce [OPTIONS] FILEPATH
 
 * `--help`: Show this message and exit.
 
-## `sak publish`
+### `sak blog publish`
 
 Publish a draft blog posts on Dev.to and Medium.
 
 **Usage**:
 
 ```console
-$ sak publish [OPTIONS] BLOG_FILEPATH CANONICAL_URL
+$ sak blog publish [OPTIONS] BLOG_FILEPATH CANONICAL_URL
 ```
 
 **Arguments**:
