@@ -10,9 +10,10 @@ import copy
 from typing import Optional
 from rich import print
 from pathlib import Path
-from .helper import SakError
+from ..utils.exceptions import SakError
 from PIL import Image
 import cairosvg
+
 
 class FrontMatter(BaseModel):
     draft: bool
@@ -25,9 +26,11 @@ class FrontMatter(BaseModel):
     main_image: str
     series: Optional[str] = None
 
+
 class BlogPost(BaseModel):
     content: str
     meta: FrontMatter
+
 
 class BlogPostParser:
     # map for converting admonitions into a "quote with relevant emoji"
@@ -46,15 +49,17 @@ class BlogPostParser:
         "quote": ":speaking_head:",
     }
 
-    admonition_pattern = re.compile(r'[!?]{3} (\w+)(?:\s+"([^"]+)")?\n\n((?:\s{4}.*\n?)+)')
+    admonition_pattern = re.compile(
+        r'[!?]{3} (\w+)(?:\s+"([^"]+)")?\n\n((?:\s{4}.*\n?)+)'
+    )
     main_image_pattern = rf"^(.*{re.escape("main-image")}.*)$"
     url_pattern = r"\((https?://[^\s\)]+)\)"
     md_image_pattern = r"!\[(.*?)\]\((https?://[^\s\)]+)\)"
-    curly_brace_pattern = r'(!\[.*?\]\(https?://[^\)]+\))\s*\{.*?\}'
+    curly_brace_pattern = r"(!\[.*?\]\(https?://[^\)]+\))\s*\{.*?\}"
 
     medium_api = "https://api.medium.com/v1"
     dev_api = "https://dev.to/api/articles"
-        
+
     def __init__(self, blog_post: str):
         self.sak_cache = Path.home() / ".cache" / "sak"
         self.sak_cache.mkdir(parents=True, exist_ok=True)
@@ -79,9 +84,11 @@ class BlogPostParser:
 
     def _remove_curly_brace_content(self, content: str):
         # This is the extra css that can be passed into material for mkdocs
-        return re.sub(self.curly_brace_pattern, r'\1', content, flags=re.MULTILINE)
+        return re.sub(self.curly_brace_pattern, r"\1", content, flags=re.MULTILINE)
 
-    def _upload_image_to_medium(self, content: str, image_str: str, alt_text: str) -> str:
+    def _upload_image_to_medium(
+        self, content: str, image_str: str, alt_text: str
+    ) -> str:
         # download and convert image
         r = httpx.get(image_str)
         r.raise_for_status()
@@ -94,7 +101,7 @@ class BlogPostParser:
 
         with image_filename.open("wb") as f:
             f.write(r.content)
-        
+
         if extension == "svg":
             png = Path(f"{og_name}.png")
             cairosvg.svg2png(url=image_filename.name, write_to=png.name)
@@ -111,16 +118,14 @@ class BlogPostParser:
         token = os.getenv("MEDIUM_API_KEY")
         if token is None:
             raise SakError("MEDIUM_API_KEY is not found.")
-        
+
         with image_filename.open("rb") as image_file:
             headers = {
                 "Authorization": f"Bearer {token}",
                 "Accept": "application/json",
                 "Accept-Charset": "utf-8",
             }
-            files = {
-                "image": (image_filename.name, image_file, "image/jpeg")
-            }
+            files = {"image": (image_filename.name, image_file, "image/jpeg")}
             r = httpx.post(f"{self.medium_api}/images", headers=headers, files=files)
             r.raise_for_status()
 
@@ -140,18 +145,18 @@ class BlogPostParser:
         match = re.search(self.main_image_pattern, content, re.MULTILINE)
         if not match:
             raise SakError("Cannot find Main Image")
-        
+
         url_match = re.search(self.url_pattern, match.group(1))
         if not url_match:
             raise SakError("Cannot find the URL inside the Main Image line")
-        
+
         return url_match.group(1)
-    
+
     def _remove_main_image(self, content: str) -> str:
         match = re.search(self.main_image_pattern, content, re.MULTILINE)
         if not match:
             raise SakError("Cannot find Main Image")
-        
+
         return content.replace(match.group(1), "")
 
     def _add_title(self, blog: BlogPost) -> BlogPost:
@@ -175,13 +180,13 @@ class BlogPostParser:
 
             if title is None:
                 title = note_type.title()
-            
+
             # Indent each line of body and prepend "> "
             note_emoji = self._note_type_to_emoji(note_type)
-            indented_body = ''.join([f"> {line[4:]}" for line in body.splitlines(True)])
-            
+            indented_body = "".join([f"> {line[4:]}" for line in body.splitlines(True)])
+
             return f"> {note_emoji} **{title}**\n\n{indented_body}"
-        
+
         # Apply transformation to the content
         transformed_content = self.admonition_pattern.sub(replace_admonition, content)
         return transformed_content
@@ -193,7 +198,7 @@ class BlogPostParser:
 
         if lines[0] != "---":
             raise SakError("No frontmatter detected!")
-        
+
         # capture the frontmatter
         end_index = 1
         delimiter = lines[0]
@@ -202,7 +207,7 @@ class BlogPostParser:
             end_index += 1
 
         # skip the closing delimiter
-        blog_content = "\n".join(lines[end_index + 1:]).strip()
+        blog_content = "\n".join(lines[end_index + 1 :]).strip()
         # remove the excerpt marker
         blog_content = blog_content.replace("<!-- more -->\n", "")
         # Apply generic transformations
@@ -217,9 +222,9 @@ class BlogPostParser:
         front_matter["main_image"] = self._get_main_image(blog_content)
 
         return BlogPost(
-                content=blog_content.strip(),
-                meta=FrontMatter(**front_matter),
-            )
+            content=blog_content.strip(),
+            meta=FrontMatter(**front_matter),
+        )
 
     def send_to_medium(self, canonical_url: str, dry_run: bool = False):
         token = os.getenv("MEDIUM_API_KEY")
@@ -240,9 +245,13 @@ class BlogPostParser:
 
         for image in self._find_all_images(self.medium_blog.content):
             alt_text, url = image
-            self.medium_blog.content = self._upload_image_to_medium(self.medium_blog.content, url, alt_text)
+            self.medium_blog.content = self._upload_image_to_medium(
+                self.medium_blog.content, url, alt_text
+            )
 
-        self.medium_blog.content += f"\n\n---\n*Originally published on my [blog]({canonical_url})*"
+        self.medium_blog.content += (
+            f"\n\n---\n*Originally published on my [blog]({canonical_url})*"
+        )
 
         payload = {
             "title": self.medium_blog.meta.title,
@@ -263,7 +272,7 @@ class BlogPostParser:
 
             payload_copy = copy.deepcopy(payload)
             payload_copy["content"] = "See cache..."
-            print(f"{prefix} Payload:",payload_copy)
+            print(f"{prefix} Payload:", payload_copy)
 
             return
 
@@ -297,7 +306,7 @@ class BlogPostParser:
                 "tags": self.dev_blog.meta.tags,
                 "description": self.dev_blog.meta.description,
                 "main_image": self.dev_blog.meta.main_image,
-                "canonical_url": canonical_url
+                "canonical_url": canonical_url,
             }
         }
         if self.dev_blog.meta.series:
@@ -312,10 +321,10 @@ class BlogPostParser:
 
             payload_copy = copy.deepcopy(payload)
             payload_copy["article"]["body_markdown"] = "See cache..."
-            print(f"{prefix} Payload:",payload_copy)
+            print(f"{prefix} Payload:", payload_copy)
 
             return
-        
+
         r = httpx.post(
             url=self.dev_api,
             headers=headers,
@@ -324,7 +333,6 @@ class BlogPostParser:
 
         r.raise_for_status()
         print("Posted to [link=https://dev.to/dashboard][bold green]Dev.to")
-    
 
 
 if __name__ == "__main__":
@@ -334,4 +342,3 @@ if __name__ == "__main__":
         parser = BlogPostParser(f.read())
         parser.send_to_medium("https://www.theselftaughtdev.io", dry_run=dry)
         parser.send_to_dev("https://www.theselftaughtdev.io", dry_run=dry)
-        
