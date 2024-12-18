@@ -1,6 +1,6 @@
 [project]
 name = "sak"
-version = "0.2.0"
+version = "1.0.0"
 description = "CLI to help with various tasks"
 readme = "README.md"
 requires-python = ">=3.12"

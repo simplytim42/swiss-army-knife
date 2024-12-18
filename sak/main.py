@@ -5,7 +5,7 @@ from .blog import app as blog_app
 OVERVIEW = """
 Swiss Army Knife (sak).
 
-The following env vars need to exist:\n\n- OPENAI_API_KEY\n\n- MEDIUM_API_KEY\n\n- DEV_API_KEY
+The following environment variables need to exist:\n\n- OPENAI_API_KEY\n\n- MEDIUM_API_KEY\n\n- DEV_API_KEY
 """
 
 app = typer.Typer(no_args_is_help=True, help=OVERVIEW)
