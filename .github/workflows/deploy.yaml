@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: 0.4.16
+      
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+            python-version-file: '.python-version'
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+     
+      - name: Update README
+        run: uv run typer sak.main utils docs --name sak --output README.md
+
+      - name: Commit and push changes
+        run: |
+          git add README.md
+          git commit -m "Update README [skip ci]"
+          git push
