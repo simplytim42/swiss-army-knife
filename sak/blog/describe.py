@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 from pathlib import Path
 from openai import OpenAI
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
 
@@ -42,16 +43,22 @@ def describe(
     user_content = filepath.open().read()
     client = OpenAI()
 
-    completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": DESCRIPTION_GENERATOR_CONTENT},
-            {
-                "role": "user",
-                "content": f"Summarise this article: ```{user_content}```",
-            },
-        ],
-    )
+    with Progress(
+        SpinnerColumn(style="purple3"),
+        TextColumn("[bold purple3]Getting descriptions..."),
+        transient=True,
+    ) as progress:
+        progress.add_task("")
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": DESCRIPTION_GENERATOR_CONTENT},
+                {
+                    "role": "user",
+                    "content": f"Summarise this article: ```{user_content}```",
+                },
+            ],
+        )
 
     try:
         descriptions = json.loads(completion.choices[0].message.content)

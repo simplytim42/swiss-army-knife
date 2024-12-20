@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 from pathlib import Path
 from openai import OpenAI
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
 
@@ -41,16 +42,22 @@ def title(
     user_content = filepath.open().read()
     client = OpenAI()
 
-    completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": TITLE_GENERATOR_CONTENT},
-            {
-                "role": "user",
-                "content": f"Create a title this article: ```{user_content}```",
-            },
-        ],
-    )
+    with Progress(
+        SpinnerColumn(style="purple3"),
+        TextColumn("[bold purple3]Generating titles..."),
+        transient=True,
+    ) as progress:
+        progress.add_task("")
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": TITLE_GENERATOR_CONTENT},
+                {
+                    "role": "user",
+                    "content": f"Create a title this article: ```{user_content}```",
+                },
+            ],
+        )
 
     try:
         titles = json.loads(completion.choices[0].message.content)

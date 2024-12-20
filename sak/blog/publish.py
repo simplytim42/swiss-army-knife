@@ -2,6 +2,7 @@ import typer
 from typing_extensions import Annotated
 from pathlib import Path
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn
 import validators
 from .blog_parser import BlogPostParser
 
@@ -33,25 +34,30 @@ def publish(
     ] = False,
 ):
     """Publish a draft blog posts on Dev.to and Medium."""
+    with Progress(
+        SpinnerColumn(style="purple3"),
+        TextColumn("[bold purple3]Publishing blog post..."),
+        transient=True,
+    ) as progress:
+        progress.add_task("")
+        if not validators.url(canonical_url):
+            raise Exception("The Canonical URL you provided is not valid.")
 
-    if not validators.url(canonical_url):
-        raise Exception("The Canonical URL you provided is not valid.")
+        if not blog_filepath.exists():
+            raise Exception("The filepath provided does not exist.")
 
-    if not blog_filepath.exists():
-        raise Exception("The filepath provided does not exist.")
+        if only_dev and only_medium:
+            raise Exception("--only-dev and --only-medium cannot be called together.")
 
-    if only_dev and only_medium:
-        raise Exception("--only-dev and --only-medium cannot be called together.")
+        post = BlogPostParser(blog_filepath.read_text())
 
-    post = BlogPostParser(blog_filepath.read_text())
+        if not only_dev:
+            post.send_to_medium(canonical_url, dry_run)
 
-    if not only_dev:
-        post.send_to_medium(canonical_url, dry_run)
+        if not only_medium:
+            post.send_to_dev(canonical_url, dry_run)
 
-    if not only_medium:
-        post.send_to_dev(canonical_url, dry_run)
-
-    if not dry_run:
-        print(
-            "REMEMBER: Copy and paste the version from [bold blue]Medium[/bold blue] into [bold yellow]LinkedIn[/bold yellow]"
-        )
+        if not dry_run:
+            print(
+                "REMEMBER: Copy and paste the version from [bold blue]Medium[/bold blue] into [bold yellow]LinkedIn[/bold yellow]"
+            )

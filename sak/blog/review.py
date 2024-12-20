@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 from pathlib import Path
 from openai import OpenAI
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 
 POST_REVIEWER_CONTENT = """
@@ -44,12 +45,21 @@ def review(
     user_content = filepath.open().read()
     client = OpenAI()
 
-    completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": POST_REVIEWER_CONTENT},
-            {"role": "user", "content": f"Analyse this article: ```{user_content}```"},
-        ],
-    )
+    with Progress(
+        SpinnerColumn(style="purple3"),
+        TextColumn("[bold purple3]Reviewing blog post..."),
+        transient=True,
+    ) as progress:
+        progress.add_task("")
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": POST_REVIEWER_CONTENT},
+                {
+                    "role": "user",
+                    "content": f"Analyse this article: ```{user_content}```",
+                },
+            ],
+        )
 
     print(completion.choices[0].message.content)
