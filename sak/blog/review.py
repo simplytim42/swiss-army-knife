@@ -4,6 +4,8 @@ from pathlib import Path
 from openai import OpenAI
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from ..utils.config import DEFAULT_AI_MODEL
+from ..utils.helpers import validate_model
 
 
 POST_REVIEWER_CONTENT = """
@@ -34,6 +36,9 @@ def review(
     filepath: Annotated[
         Path, typer.Argument(help="The filepath of the blog post being reviewed.")
     ],
+    model: Annotated[
+        str, typer.Option(help="The model you wish to use.")
+    ] = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT for review.
@@ -41,6 +46,8 @@ def review(
     if not filepath.exists():
         print(f"[bold red]File not found:[/bold red] {filepath}")
         raise typer.Exit(code=1)
+
+    validate_model(model)
 
     user_content = filepath.open().read()
     client = OpenAI()

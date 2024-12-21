@@ -6,6 +6,8 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
+from ..utils.config import DEFAULT_AI_MODEL
+from ..utils.helpers import validate_model
 
 
 DESCRIPTION_GENERATOR_CONTENT = """
@@ -32,6 +34,9 @@ def describe(
     filepath: Annotated[
         Path, typer.Argument(help="The filepath of the blog post being described.")
     ],
+    model: Annotated[
+        str, typer.Option(help="The model you wish to use.")
+    ] = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT to generate a one-line description. The result is copied to your clipboard.
@@ -39,6 +44,8 @@ def describe(
     if not filepath.exists():
         print(f"[bold red]File not found:[/bold red] {filepath}")
         raise typer.Exit(code=1)
+
+    validate_model(model)
 
     user_content = filepath.open().read()
     client = OpenAI()
