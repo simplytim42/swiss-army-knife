@@ -4,9 +4,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
-from ..utils.config import DEFAULT_AI_MODEL
-from ..utils.helpers import validate_model
-from ..utils.annotations import Annotations
+from ..utils import DEFAULT_AI_MODEL, Annotations, Helpers
 
 DESCRIPTION_GENERATOR_CONTENT = """
 You are a skilled, concise summariser specialising in technical blog posts and SEO. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -35,11 +33,8 @@ def describe(
     """
     Send a blog post to ChatGPT to generate a one-line description. The result is copied to your clipboard.
     """
-    if not filepath.exists():
-        print(f"[bold red]File not found:[/bold red] {filepath}")
-        raise typer.Exit(code=1)
-
-    validate_model(model)
+    Helpers.check_file_exists(filepath)
+    Helpers.validate_model(model)
 
     user_content = filepath.open().read()
     client = OpenAI()
@@ -51,7 +46,7 @@ def describe(
     ) as progress:
         progress.add_task("")
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {"role": "system", "content": DESCRIPTION_GENERATOR_CONTENT},
                 {

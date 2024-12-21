@@ -2,10 +2,7 @@ import typer
 from openai import OpenAI
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from ..utils.config import DEFAULT_AI_MODEL
-from ..utils.helpers import validate_model
-from ..utils.annotations import Annotations
-
+from ..utils import DEFAULT_AI_MODEL, Annotations, Helpers
 
 POST_REVIEWER_CONTENT = """
 You are a skilled, concise proofreader specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -26,7 +23,6 @@ For example, respond with:
 `Correctness: 5/5\nClarity: 5/5`
 """
 
-
 app = typer.Typer()
 
 
@@ -38,11 +34,8 @@ def review(
     """
     Send a blog post to ChatGPT for review.
     """
-    if not filepath.exists():
-        print(f"[bold red]File not found:[/bold red] {filepath}")
-        raise typer.Exit(code=1)
-
-    validate_model(model)
+    Helpers.check_file_exists(filepath)
+    Helpers.validate_model(model)
 
     user_content = filepath.open().read()
     client = OpenAI()
@@ -54,7 +47,7 @@ def review(
     ) as progress:
         progress.add_task("")
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {"role": "system", "content": POST_REVIEWER_CONTENT},
                 {
