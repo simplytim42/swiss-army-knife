@@ -77,6 +77,7 @@ $ sak blog review [OPTIONS] FILEPATH
 
 **Options**:
 
+* `--model TEXT`: The model you wish to use.  [default: gpt-4o-mini]
 * `--help`: Show this message and exit.
 
 ### `sak blog describe`
@@ -95,6 +96,7 @@ $ sak blog describe [OPTIONS] FILEPATH
 
 **Options**:
 
+* `--model TEXT`: The model you wish to use.  [default: gpt-4o-mini]
 * `--help`: Show this message and exit.
 
 ### `sak blog title`
@@ -113,6 +115,7 @@ $ sak blog title [OPTIONS] FILEPATH
 
 **Options**:
 
+* `--model TEXT`: The model you wish to use.  [default: gpt-4o-mini]
 * `--help`: Show this message and exit.
 
 ### `sak blog introduce`
@@ -131,6 +134,7 @@ $ sak blog introduce [OPTIONS] FILEPATH
 
 **Options**:
 
+* `--model TEXT`: The model you wish to use.  [default: gpt-4o-mini]
 * `--help`: Show this message and exit.
 
 ### `sak blog publish`
