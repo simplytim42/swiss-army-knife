@@ -6,6 +6,8 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
+from ..utils.config import DEFAULT_AI_MODEL
+from ..utils.helpers import validate_model
 
 EXCERPT_GENERATOR_CONTENT = """
 You are a skilled content summariser specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -36,6 +38,9 @@ def introduce(
             help="The filepath of the blog post being introduced (generate an excerpt)."
         ),
     ],
+    model: Annotated[
+        str, typer.Option(help="The model you wish to use.")
+    ] = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT to generate an introduction.
@@ -43,6 +48,8 @@ def introduce(
     if not filepath.exists():
         print(f"[bold red]File not found:[/bold red] {filepath}")
         raise typer.Exit(code=1)
+
+    validate_model(model)
 
     user_content = filepath.open().read()
     client = OpenAI()
