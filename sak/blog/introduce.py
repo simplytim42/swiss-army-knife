@@ -1,6 +1,4 @@
 import typer
-from typing_extensions import Annotated
-from pathlib import Path
 from openai import OpenAI
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -8,6 +6,7 @@ import json
 import pyperclip
 from ..utils.config import DEFAULT_AI_MODEL
 from ..utils.helpers import validate_model
+from ..utils.annotations import Annotations
 
 EXCERPT_GENERATOR_CONTENT = """
 You are a skilled content summariser specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -32,15 +31,8 @@ app = typer.Typer()
 
 @app.command()
 def introduce(
-    filepath: Annotated[
-        Path,
-        typer.Argument(
-            help="The filepath of the blog post being introduced (generate an excerpt)."
-        ),
-    ],
-    model: Annotated[
-        str, typer.Option(help="The model you wish to use.")
-    ] = DEFAULT_AI_MODEL,
+    filepath: Annotations.filepath,
+    model: Annotations.model = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT to generate an introduction.

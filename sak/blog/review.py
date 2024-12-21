@@ -1,11 +1,10 @@
 import typer
-from typing_extensions import Annotated
-from pathlib import Path
 from openai import OpenAI
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from ..utils.config import DEFAULT_AI_MODEL
 from ..utils.helpers import validate_model
+from ..utils.annotations import Annotations
 
 
 POST_REVIEWER_CONTENT = """
@@ -33,12 +32,8 @@ app = typer.Typer()
 
 @app.command()
 def review(
-    filepath: Annotated[
-        Path, typer.Argument(help="The filepath of the blog post being reviewed.")
-    ],
-    model: Annotated[
-        str, typer.Option(help="The model you wish to use.")
-    ] = DEFAULT_AI_MODEL,
+    filepath: Annotations.filepath,
+    model: Annotations.model = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT for review.
