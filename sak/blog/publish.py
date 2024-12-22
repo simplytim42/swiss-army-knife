@@ -1,22 +1,17 @@
 import typer
 from typing_extensions import Annotated
-from pathlib import Path
 from rich import print
-from rich.progress import Progress, SpinnerColumn, TextColumn
 import validators
 from .blog_parser import BlogPostParser
+from ..utils import Annotations, Helpers
+
 
 app = typer.Typer()
 
 
 @app.command()
 def publish(
-    blog_filepath: Annotated[
-        Path,
-        typer.Argument(
-            help="The local filepath of the markdown file of the blog post being published."
-        ),
-    ],
+    filepath: Annotations.filepath,
     canonical_url: Annotated[
         str, typer.Argument(help="The URL of the original blog post.")
     ],
@@ -34,22 +29,17 @@ def publish(
     ] = False,
 ):
     """Publish a draft blog posts on Dev.to and Medium."""
-    with Progress(
-        SpinnerColumn(style="purple3"),
-        TextColumn("[bold purple3]Publishing blog post..."),
-        transient=True,
-    ) as progress:
+    with Helpers.get_spinner("Publishing blog post...") as progress:
         progress.add_task("")
         if not validators.url(canonical_url):
             raise Exception("The Canonical URL you provided is not valid.")
 
-        if not blog_filepath.exists():
-            raise Exception("The filepath provided does not exist.")
+        Helpers.check_file_exists(filepath)
 
         if only_dev and only_medium:
             raise Exception("--only-dev and --only-medium cannot be called together.")
 
-        post = BlogPostParser(blog_filepath.read_text())
+        post = BlogPostParser(filepath.read_text())
 
         if not only_dev:
             post.send_to_medium(canonical_url, dry_run)

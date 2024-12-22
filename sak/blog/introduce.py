@@ -1,13 +1,9 @@
 import typer
-from typing_extensions import Annotated
-from pathlib import Path
 from openai import OpenAI
 from rich import print
-from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
-from ..utils.config import DEFAULT_AI_MODEL
-from ..utils.helpers import validate_model
+from ..utils import DEFAULT_AI_MODEL, Annotations, Helpers
 
 EXCERPT_GENERATOR_CONTENT = """
 You are a skilled content summariser specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -32,36 +28,22 @@ app = typer.Typer()
 
 @app.command()
 def introduce(
-    filepath: Annotated[
-        Path,
-        typer.Argument(
-            help="The filepath of the blog post being introduced (generate an excerpt)."
-        ),
-    ],
-    model: Annotated[
-        str, typer.Option(help="The model you wish to use.")
-    ] = DEFAULT_AI_MODEL,
+    filepath: Annotations.filepath,
+    model: Annotations.model = DEFAULT_AI_MODEL,
 ):
     """
     Send a blog post to ChatGPT to generate an introduction.
     """
-    if not filepath.exists():
-        print(f"[bold red]File not found:[/bold red] {filepath}")
-        raise typer.Exit(code=1)
+    Helpers.check_file_exists(filepath)
+    Helpers.validate_model(model)
 
-    validate_model(model)
-
-    user_content = filepath.open().read()
+    user_content = filepath.read_text()
     client = OpenAI()
 
-    with Progress(
-        SpinnerColumn(style="purple3"),
-        TextColumn("[bold purple3]Preparing introductions..."),
-        transient=True,
-    ) as progress:
+    with Helpers.get_spinner("Preparing introductions...") as progress:
         progress.add_task("")
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {"role": "system", "content": EXCERPT_GENERATOR_CONTENT},
                 {
@@ -74,14 +56,13 @@ def introduce(
     try:
         excerpts = json.loads(completion.choices[0].message.content)
     except json.JSONDecodeError:
-        print("Response was not in JSON format...")
+        print("[red]Response was not in JSON format...")
         raise typer.Abort()
 
     for i, excerpt in enumerate(excerpts, start=1):
         print(f"[bold underline dark_orange]Excerpt {i}[/]\n{excerpt}\n")
 
-    selection = int(
-        typer.prompt("Which except would you like to copy to your clipboard?")
-    )
+    selection = int(typer.prompt("Which except would you like to copy?"))
 
     pyperclip.copy(excerpts[selection - 1])
+    print("[green]Copied to clipboard![/]")
