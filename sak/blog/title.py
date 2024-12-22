@@ -1,7 +1,6 @@
 import typer
 from openai import OpenAI
 from rich import print
-from rich.progress import Progress, SpinnerColumn, TextColumn
 import json
 import pyperclip
 from ..utils import DEFAULT_AI_MODEL, Helpers, Annotations
@@ -36,14 +35,10 @@ def title(
     Helpers.check_file_exists(filepath)
     Helpers.validate_model(model)
 
-    user_content = filepath.open().read()
+    user_content = filepath.read_text()
     client = OpenAI()
 
-    with Progress(
-        SpinnerColumn(style="purple3"),
-        TextColumn("[bold purple3]Generating titles..."),
-        transient=True,
-    ) as progress:
+    with Helpers.get_spinner("Generating titles...") as progress:
         progress.add_task("")
         completion = client.chat.completions.create(
             model=model,

@@ -1,10 +1,10 @@
 import typer
 from typing_extensions import Annotated
 from rich import print
-from rich.progress import Progress, SpinnerColumn, TextColumn
 import validators
 from .blog_parser import BlogPostParser
-from ..utils.annotations import Annotations
+from ..utils import Annotations, Helpers
+
 
 app = typer.Typer()
 
@@ -29,11 +29,7 @@ def publish(
     ] = False,
 ):
     """Publish a draft blog posts on Dev.to and Medium."""
-    with Progress(
-        SpinnerColumn(style="purple3"),
-        TextColumn("[bold purple3]Publishing blog post..."),
-        transient=True,
-    ) as progress:
+    with Helpers.get_spinner("Publishing blog post...") as progress:
         progress.add_task("")
         if not validators.url(canonical_url):
             raise Exception("The Canonical URL you provided is not valid.")
