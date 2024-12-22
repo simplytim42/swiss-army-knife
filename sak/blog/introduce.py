@@ -56,14 +56,13 @@ def introduce(
     try:
         excerpts = json.loads(completion.choices[0].message.content)
     except json.JSONDecodeError:
-        print("Response was not in JSON format...")
+        print("[red]Response was not in JSON format...")
         raise typer.Abort()
 
     for i, excerpt in enumerate(excerpts, start=1):
         print(f"[bold underline dark_orange]Excerpt {i}[/]\n{excerpt}\n")
 
-    selection = int(
-        typer.prompt("Which except would you like to copy to your clipboard?")
-    )
+    selection = int(typer.prompt("Which except would you like to copy?"))
 
     pyperclip.copy(excerpts[selection - 1])
+    print("[green]Copied to clipboard![/]")

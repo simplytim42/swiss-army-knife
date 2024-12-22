@@ -34,8 +34,7 @@ def publish(
         if not validators.url(canonical_url):
             raise Exception("The Canonical URL you provided is not valid.")
 
-        if not filepath.exists():
-            raise Exception("The filepath provided does not exist.")
+        Helpers.check_file_exists(filepath)
 
         if only_dev and only_medium:
             raise Exception("--only-dev and --only-medium cannot be called together.")

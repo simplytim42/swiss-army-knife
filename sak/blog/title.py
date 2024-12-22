@@ -54,14 +54,13 @@ def title(
     try:
         titles = json.loads(completion.choices[0].message.content)
     except json.JSONDecodeError:
-        print("Response was not in JSON format...")
+        print("[red]Response was not in JSON format...")
         raise typer.Abort()
 
     for i, title in enumerate(titles, start=1):
         print(f"[bold underline sky_blue1]Title {i}[/]\n{title}\n")
 
-    selection = int(
-        typer.prompt("Which title would you like to copy to your clipboard?")
-    )
+    selection = int(typer.prompt("Which title would you like to copy?"))
 
     pyperclip.copy(titles[selection - 1])
+    print("[green]Copied to clipboard![/]")
