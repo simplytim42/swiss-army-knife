@@ -73,7 +73,7 @@ $ sak blog review [OPTIONS] FILEPATH
 
 **Arguments**:
 
-* `FILEPATH`: The filepath of the blog post being reviewed.  [required]
+* `FILEPATH`: The filepath of the blog post.  [required]
 
 **Options**:
 
@@ -92,7 +92,7 @@ $ sak blog describe [OPTIONS] FILEPATH
 
 **Arguments**:
 
-* `FILEPATH`: The filepath of the blog post being described.  [required]
+* `FILEPATH`: The filepath of the blog post.  [required]
 
 **Options**:
 
@@ -111,7 +111,7 @@ $ sak blog title [OPTIONS] FILEPATH
 
 **Arguments**:
 
-* `FILEPATH`: The filepath of the blog post being titled.  [required]
+* `FILEPATH`: The filepath of the blog post.  [required]
 
 **Options**:
 
@@ -130,7 +130,7 @@ $ sak blog introduce [OPTIONS] FILEPATH
 
 **Arguments**:
 
-* `FILEPATH`: The filepath of the blog post being introduced (generate an excerpt).  [required]
+* `FILEPATH`: The filepath of the blog post.  [required]
 
 **Options**:
 
@@ -144,12 +144,12 @@ Publish a draft blog posts on Dev.to and Medium.
 **Usage**:
 
 ```console
-$ sak blog publish [OPTIONS] BLOG_FILEPATH CANONICAL_URL
+$ sak blog publish [OPTIONS] FILEPATH CANONICAL_URL
 ```
 
 **Arguments**:
 
-* `BLOG_FILEPATH`: The local filepath of the markdown file of the blog post being published.  [required]
+* `FILEPATH`: The filepath of the blog post.  [required]
 * `CANONICAL_URL`: The URL of the original blog post.  [required]
 
 **Options**:
