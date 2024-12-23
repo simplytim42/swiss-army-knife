@@ -53,7 +53,7 @@ class BlogPostParser:
     admonition_pattern = re.compile(
         r'[!?]{3} (\w+)(?:\s+"([^"]+)")?\n\n((?:\s{4}.*\n?)+)'
     )
-    main_image_pattern = rf"^(.*{re.escape("main-image")}.*)$"
+    main_image_pattern = rf'^(.*{re.escape("main-image")}.*)$'
     url_pattern = r"\((https?://[^\s\)]+)\)"
     md_image_pattern = r"!\[(.*?)\]\((https?://[^\s\)]+)\)"
     curly_brace_pattern = r"(!\[.*?\]\(https?://[^\)]+\))\s*\{.*?\}"
@@ -137,8 +137,6 @@ class BlogPostParser:
         for i, line in enumerate(lines):
             if image_str in line:
                 lines[i] = f'<img src="{image_url}" alt="{alt_text}">'
-            if "<figure" in line or "</figure>" in line:
-                lines[i] = ""
         return "\n".join(lines)
 
     def _get_main_image(self, content: str) -> str:
@@ -152,13 +150,6 @@ class BlogPostParser:
             raise BlogParserError("Cannot find the URL inside the Main Image line")
 
         return url_match.group(1)
-
-    def _remove_main_image(self, content: str) -> str:
-        match = re.search(self.main_image_pattern, content, re.MULTILINE)
-        if not match:
-            raise BlogParserError("Cannot find Main Image")
-
-        return content.replace(match.group(1), "")
 
     def _add_title(self, blog: BlogPost) -> BlogPost:
         # used if the hosting site doesn't want title as metadata. This puts it in the post content.
@@ -194,6 +185,11 @@ class BlogPostParser:
         transformed_content = self.admonition_pattern.sub(replace_admonition, content)
         return transformed_content
 
+    def _remove_includes(self, content: str):
+        lines = content.split("\n")
+        lines = [line for line in lines if "--8<--" not in line]
+        return "\n".join(lines)
+
     def _parse_blog(self, content: str) -> BlogPost:
         front_matter_tmp = ""
         blog_content = ""
@@ -217,6 +213,7 @@ class BlogPostParser:
         blog_content = self._transform_admonitions(blog_content)
         blog_content = self._replace_headers(blog_content)
         blog_content = emoji.emojize(blog_content, language="alias")
+        blog_content = self._remove_includes(blog_content)
 
         # turn frontmatter into a dict and add extra metadata
         front_matter = yaml.safe_load(front_matter_tmp)
@@ -298,7 +295,9 @@ class BlogPostParser:
             "Content-Type": "application/json",
         }
 
-        self.dev_blog.content = self._remove_main_image(self.dev_blog.content)
+        self.dev_blog.content = re.sub(
+            r"\s+<figcaption>", "\n<figcaption>", self.dev_blog.content
+        )
         self.dev_blog.content = self._remove_curly_brace_content(self.dev_blog.content)
 
         payload = {
