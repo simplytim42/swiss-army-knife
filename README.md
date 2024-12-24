@@ -144,17 +144,17 @@ Publish a draft blog posts on Dev.to and Medium.
 **Usage**:
 
 ```console
-$ sak blog publish [OPTIONS] FILEPATH CANONICAL_URL
+$ sak blog publish [OPTIONS] FILEPATH [CANONICAL_URL]
 ```
 
 **Arguments**:
 
 * `FILEPATH`: The filepath of the blog post.  [required]
-* `CANONICAL_URL`: The URL of the original blog post.  [required]
+* `[CANONICAL_URL]`: The URL of the original blog post.  [default: http://default.com]
 
 **Options**:
 
-* `--dry-run / --no-dry-run`: If true, then the draft posts will be generated and written to file only. Nothing is posted to dev.to or Medium.  [default: no-dry-run]
-* `--only-medium / --no-only-medium`: If true, then only Medium is posted to.  [default: no-only-medium]
-* `--only-dev / --no-only-dev`: If true, then only Dev.to is posted to.  [default: no-only-dev]
+* `--dry-run / --no-dry-run`: If true, then the draft posts will be written to file instead.  [default: no-dry-run]
+* `--only-medium / --no-only-medium`: If true, send post to Medium only.  [default: no-only-medium]
+* `--only-dev / --no-only-dev`: If true, send post to Dev.to only.  [default: no-only-dev]
 * `--help`: Show this message and exit.
