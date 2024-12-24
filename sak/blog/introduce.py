@@ -1,9 +1,12 @@
 import typer
-from openai import OpenAI
 from rich import print
-import json
 import pyperclip
 from ..utils import DEFAULT_AI_MODEL, Annotations, Helpers
+from pydantic import BaseModel
+
+
+class IntroResponse(BaseModel):
+    excerpts: list[str]
 
 EXCERPT_GENERATOR_CONTENT = """
 You are a skilled content summariser specialising in technical blog posts. Articles provided within triple backticks are in markdown format (for 'Material for MKDocs') and may include front matter you can ignore.
@@ -13,14 +16,6 @@ Be concise and casual.
 Refer to the reader in the second person (you).
 Do not refer to the title of the article.
 Use UK spelling and grammar.
-
-**Respond ONLY with a JSON array of strings, formatted as follows:**
-[
-    "First excerpt",
-    "Second excerpt",
-    "Third excerpt"
-]
-**Do not include any additional commentary or formatting outside of the JSON array.**
 """
 
 app = typer.Typer()
@@ -38,11 +33,10 @@ def introduce(
     Helpers.validate_model(model)
 
     user_content = filepath.read_text()
-    client = OpenAI()
 
     with Helpers.get_spinner("Preparing introductions...") as progress:
         progress.add_task("")
-        completion = client.chat.completions.create(
+        response = Helpers.query_gpt(
             model=model,
             messages=[
                 {"role": "system", "content": EXCERPT_GENERATOR_CONTENT},
@@ -51,18 +45,19 @@ def introduce(
                     "content": f"Introduce this article: ```{user_content}```",
                 },
             ],
+            response_format=IntroResponse,
         )
 
-    try:
-        excerpts = json.loads(completion.choices[0].message.content)
-    except json.JSONDecodeError:
-        print("[red]Response was not in JSON format...")
-        raise typer.Abort()
-
-    for i, excerpt in enumerate(excerpts, start=1):
+    for i, excerpt in enumerate(response.excerpts, start=1):
         print(f"[bold underline dark_orange]Excerpt {i}[/]\n{excerpt}\n")
 
-    selection = int(typer.prompt("Which except would you like to copy?"))
+    selection = int(
+        typer.prompt(
+            f"Which except would you like to copy? ('{Helpers.none_selection}' for None)"
+        )
+    )
 
-    pyperclip.copy(excerpts[selection - 1])
+    Helpers.isNoneSelection(selection)
+
+    pyperclip.copy(response.excerpts[selection - 1])
     print("[green]Copied to clipboard![/]")
