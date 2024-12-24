@@ -5,6 +5,7 @@ import validators
 from .blog_parser import BlogPostParser
 from ..utils import Annotations, Helpers
 
+DEFAULT_URL = "http://default.com"
 
 app = typer.Typer()
 
@@ -14,18 +15,18 @@ def publish(
     filepath: Annotations.filepath,
     canonical_url: Annotated[
         str, typer.Argument(help="The URL of the original blog post.")
-    ],
+    ] = DEFAULT_URL,
     dry_run: Annotated[
         bool,
         typer.Option(
-            help="If true, then the draft posts will be generated and written to file only. Nothing is posted to dev.to or Medium."
+            help="If true, then the draft posts will be written to file instead."
         ),
     ] = False,
     only_medium: Annotated[
-        bool, typer.Option(help="If true, then only Medium is posted to.")
+        bool, typer.Option(help="If true, send post to Medium only.")
     ] = False,
     only_dev: Annotated[
-        bool, typer.Option(help="If true, then only Dev.to is posted to.")
+        bool, typer.Option(help="If true, send post to Dev.to only.")
     ] = False,
 ):
     """Publish a draft blog posts on Dev.to and Medium."""
@@ -47,7 +48,10 @@ def publish(
         if not only_medium:
             post.send_to_dev(canonical_url, dry_run)
 
-        if not dry_run:
-            print(
-                "REMEMBER: Copy and paste the version from [bold blue]Medium[/bold blue] into [bold yellow]LinkedIn[/bold yellow]"
-            )
+    if canonical_url == DEFAULT_URL:
+        msg = f"[yellow bold]Warning:[/yellow bold] Using default canonical URL of {DEFAULT_URL}"
+        print(msg)
+
+    if not dry_run:
+        msg = "REMEMBER: Copy and paste the version from [bold blue]Medium[/bold blue] into [bold yellow]LinkedIn[/bold yellow]"
+        print(msg)
