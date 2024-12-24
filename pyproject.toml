@@ -1,6 +1,6 @@
 [project]
 name = "sak"
-version = "1.4.0"
+version = "1.5.0"
 description = "CLI to help with various tasks"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,7 +8,7 @@ dependencies = [
     "cairosvg>=2.7.1",
     "emoji>=2.14.0",
     "httpx>=0.27.2",
-    "openai>=1.51.2",
+    "openai>=1.58.1",
     "pillow>=11.0.0",
     "pydantic>=2.9.2",
     "pymdown-extensions>=10.11.2",
